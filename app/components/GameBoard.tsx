@@ -14,7 +14,7 @@ interface GameBoardProps {
 
 export function GameBoard({ pieces, currentPlayer, winner, onMove }: GameBoardProps) {
   return (
-    <div className="relative w-96 h-96 mb-8">
+    <div className="relative w-80 h-96 sm:w-96 sm:h-96 mb-8">
       {/* Board Lines */}
       <svg className="absolute inset-0 w-full h-full" strokeWidth="2" stroke="rgba(156, 163, 175, 0.5)">
         {/* Vertical center line */}
