@@ -1,30 +1,83 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { TouchBackend } from 'react-dnd-touch-backend';
-import { Button } from "@/components/ui/button";
-import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Button } from '@/components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { GameBoard } from './components/GameBoard';
 import type { GamePiece, Player } from './types/game';
 import { WINNING_COMBINATIONS } from './types/game';
+import dynamic from 'next/dynamic';
+
+const DynamicDndProvider = dynamic(
+  async () => {
+    const mod = await import('react-dnd');
+    return ({ children, ...props }: any) => {
+      const [mounted, setMounted] = useState(false);
+      
+      useEffect(() => {
+        setMounted(true);
+      }, []);
+
+      if (!mounted) {
+        return null;
+      }
+
+      return <mod.DndProvider {...props}>{children}</mod.DndProvider>;
+    };
+  },
+  { ssr: false }
+);
+
+// Custom provider component to handle touch detection
+const CustomDndProvider = ({ children }: any) => {
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
+
+  useEffect(() => {
+    const touchDevice =
+      'ontouchstart' in window ||
+      navigator.maxTouchPoints > 0 ||
+      // @ts-ignore
+      navigator.msMaxTouchPoints > 0;
+    setIsTouchDevice(touchDevice);
+  }, []);
+
+  return (
+    <DynamicDndProvider
+      backend={isTouchDevice ? TouchBackend : HTML5Backend}
+      options={{
+        enableMouseEvents: true, // Enable both mouse and touch events
+        enableHoverOutsideTarget: true,
+        delayTouchStart: 100, // Adjust touch delay for better response
+        ignoreContextMenu: true,
+        touchSlop: 25, // Add some tolerance for slight finger movements
+      }}>
+      {children}
+    </DynamicDndProvider>
+  );
+};
 
 export default function Home() {
   const [pieces, setPieces] = useState<GamePiece[]>([]);
   const [currentPlayer, setCurrentPlayer] = useState<Player>(1);
   const [winner, setWinner] = useState<Player | null>(null);
-  const [isTouchDevice, setIsTouchDevice] = useState(false);
 
   useEffect(() => {
-    setIsTouchDevice('ontouchstart' in window);
     initializeGame();
   }, []);
 
   const initializeGame = () => {
     const availablePositions = Array.from({ length: 10 }, (_, i) => i);
     const shuffledPositions: number[] = [];
-    
+
     for (let i = 0; i < 6; i++) {
       const randomIndex = Math.floor(Math.random() * availablePositions.length);
       shuffledPositions.push(availablePositions[randomIndex]);
@@ -66,7 +119,7 @@ export default function Home() {
     );
 
     setPieces(newPieces);
-    
+
     const newWinner = checkWinner(newPieces);
     if (newWinner) {
       setWinner(newWinner);
@@ -76,11 +129,13 @@ export default function Home() {
   };
 
   return (
-    <DndProvider backend={isTouchDevice ? TouchBackend : HTML5Backend}>
-      <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 flex flex-col items-center justify-center p-4">
+    <CustomDndProvider>
+      <div className="min-h-[100svh] bg-gradient-to-b from-gray-900 to-gray-800 flex flex-col items-center justify-center p-4">
         <div className="mb-8 text-center">
           <h1 className="text-4xl font-bold text-white mb-4">Fun Board Game</h1>
-          <h1 className="text-xl text-white mb-4">Get same color pieces in a line to win!</h1>
+          <h2 className="text-xl text-white mb-4">
+            Get same color pieces in a line to win!
+          </h2>
           <p className="text-gray-300 mb-2">
             Player {currentPlayer}&apos;s Turn
           </p>
@@ -102,8 +157,7 @@ export default function Home() {
         <Button
           onClick={initializeGame}
           variant="outline"
-          className="bg-white text-gray-900 hover:bg-gray-100"
-        >
+          className="bg-white text-gray-900 hover:bg-gray-100 mt-4">
           Reset Game
         </Button>
 
@@ -119,6 +173,6 @@ export default function Home() {
           </AlertDialogContent>
         </AlertDialog>
       </div>
-    </DndProvider>
+    </CustomDndProvider>
   );
 }

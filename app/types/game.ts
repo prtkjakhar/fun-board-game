@@ -10,9 +10,9 @@ export const VALID_MOVES: { [key: number]: number[] } = {
   0: [1],           // Top left
   1: [0, 2, 3],     // Top center
   2: [1],           // Top right
-  3: [1, 4, 5, 6],  // Center top
+  3: [1, 4, 6],  // Center top
   4: [3],           // Left branch
-  5: [3],           // Right branch
+  5: [6],           // Right branch
   6: [3, 7],        // Center middle
   7: [6, 8, 9],     // Center bottom
   8: [7],           // Bottom left
@@ -20,12 +20,10 @@ export const VALID_MOVES: { [key: number]: number[] } = {
 };
 
 export const WINNING_COMBINATIONS = [
-  [0, 1, 2],    // Top horizontal
-  [4, 3, 5],    // Middle branches
-  [8, 7, 9],    // Bottom horizontal
-  [0, 3, 7],    // Left vertical
-  [1, 6, 7],    // Middle vertical
-  [2, 3, 7],    // Right vertical
+  [0, 1, 2],    // Top Horizontal
+  [8, 7, 9],    // Top Middle Vertical
+  [1, 3, 6],    // Bottom Middle Vertical
+  [3, 6, 7],    // Bottom Horizontal
 ];
 
 export const BOARD_POSITIONS = [

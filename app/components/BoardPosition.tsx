@@ -42,6 +42,7 @@ export function BoardPosition({ position, x, y, onMove, pieces }: BoardPositionP
       style={{
         left: `${x}%`,
         top: `${y}%`,
+        color: 'white'
       }}
     />
   );
