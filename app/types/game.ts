@@ -13,7 +13,7 @@ export const VALID_MOVES: { [key: number]: number[] } = {
   3: [1, 4, 6],  // Center top
   4: [3],           // Left branch
   5: [6],           // Right branch
-  6: [3, 7],        // Center middle
+  6: [3, 5, 7],        // Center middle
   7: [6, 8, 9],     // Center bottom
   8: [7],           // Bottom left
   9: [7],           // Bottom right

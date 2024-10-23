@@ -1,0 +1,5 @@
+{
+  "name": "fun-board-game",
+  "main": "party/server.ts",
+  "port": 1999
+}

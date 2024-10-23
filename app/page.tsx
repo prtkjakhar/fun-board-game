@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { DndProvider } from 'react-dnd';
+import { usePartySocket } from 'partysocket/react';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { TouchBackend } from 'react-dnd-touch-backend';
 import { Button } from '@/components/ui/button';
@@ -14,7 +14,6 @@ import {
 } from '@/components/ui/alert-dialog';
 import { GameBoard } from './components/GameBoard';
 import type { GamePiece, Player } from './types/game';
-import { WINNING_COMBINATIONS } from './types/game';
 import dynamic from 'next/dynamic';
 
 const DynamicDndProvider = dynamic(
@@ -69,65 +68,53 @@ export default function Home() {
   const [pieces, setPieces] = useState<GamePiece[]>([]);
   const [currentPlayer, setCurrentPlayer] = useState<Player>(1);
   const [winner, setWinner] = useState<Player | null>(null);
+  const [myPlayer, setMyPlayer] = useState<Player | null>(null);
+  const [waiting, setWaiting] = useState(true);
 
-  useEffect(() => {
-    initializeGame();
-  }, []);
+  console.log(myPlayer)
 
-  const initializeGame = () => {
-    const availablePositions = Array.from({ length: 10 }, (_, i) => i);
-    const shuffledPositions: number[] = [];
-
-    for (let i = 0; i < 6; i++) {
-      const randomIndex = Math.floor(Math.random() * availablePositions.length);
-      shuffledPositions.push(availablePositions[randomIndex]);
-      availablePositions.splice(randomIndex, 1);
-    }
-
-    const newPieces: GamePiece[] = [
-      { id: 1, player: 1, position: shuffledPositions[0] },
-      { id: 2, player: 1, position: shuffledPositions[1] },
-      { id: 3, player: 1, position: shuffledPositions[2] },
-      { id: 4, player: 2, position: shuffledPositions[3] },
-      { id: 5, player: 2, position: shuffledPositions[4] },
-      { id: 6, player: 2, position: shuffledPositions[5] },
-    ];
-
-    setPieces(newPieces);
-    setCurrentPlayer(1);
-    setWinner(null);
-  };
-
-  const checkWinner = (pieces: GamePiece[]) => {
-    for (const combo of WINNING_COMBINATIONS) {
-      const piecesInCombo = pieces.filter((p) => combo.includes(p.position));
-      if (
-        piecesInCombo.length === 3 &&
-        piecesInCombo.every((p) => p.player === piecesInCombo[0].player)
-      ) {
-        return piecesInCombo[0].player;
+  const socket = usePartySocket({
+    host: "fun-board-game.prtkjakhar.partykit.dev",
+    room: "game",
+    onMessage(event) {
+      const data = JSON.parse(event.data);
+      if (data.type === 'gameState') {
+        setPieces(data.state.pieces);
+        setCurrentPlayer(data.state.currentPlayer);
+        setWinner(data.state.winner);
+        
+        if (data.yourPlayer) {
+          setMyPlayer(data.yourPlayer);
+        }
+        
+        // If we have two players, game can start
+        setWaiting(Object.keys(data.state.players).length < 2);
       }
     }
-    return null;
-  };
+  });
 
   const handleMove = (piece: GamePiece, newPosition: number) => {
-    if (winner || piece.player !== currentPlayer) return;
+    if (winner || piece.player !== currentPlayer || piece.player !== myPlayer) return;
 
-    const newPieces = pieces.map((p) =>
-      p.id === piece.id ? { ...p, position: newPosition } : p
-    );
-
-    setPieces(newPieces);
-
-    const newWinner = checkWinner(newPieces);
-    if (newWinner) {
-      setWinner(newWinner);
-    } else {
-      setCurrentPlayer(currentPlayer === 1 ? 2 : 1);
-    }
+    socket.send(JSON.stringify({
+      type: 'move',
+      piece,
+      newPosition
+    }));
   };
 
+  const handleReset = () => {
+    socket.send(JSON.stringify({ type: 'reset' }));
+  };
+
+  if (waiting) {
+    return (
+      <div className="min-h-[100svh] bg-gradient-to-b from-gray-900 to-gray-800 flex flex-col items-center justify-center p-4">
+        <h1 className="text-4xl font-bold text-white mb-4">Waiting for opponent...</h1>
+      </div>
+    );
+  }
+console.log(myPlayer, currentPlayer)
   return (
     <CustomDndProvider>
       <div className="min-h-[100svh] bg-gradient-to-b from-gray-900 to-gray-800 flex flex-col items-center justify-center p-4">
@@ -137,7 +124,7 @@ export default function Home() {
             Get same color pieces in a line to win!
           </h2>
           <p className="text-gray-300 mb-2">
-            Player {currentPlayer}&apos;s Turn
+            {currentPlayer === myPlayer ? `Your Turn (${currentPlayer === 1 ? 'Red' : 'Blue'})` : `Other Player\'s Turn (${currentPlayer === 1 ? 'Red' : 'Blue'})`}
           </p>
           <div className="flex gap-2 justify-center mb-4">
             <div className="w-4 h-4 rounded-full bg-red-500"></div>
@@ -155,7 +142,7 @@ export default function Home() {
         />
 
         <Button
-          onClick={initializeGame}
+          onClick={handleReset}
           variant="outline"
           className="bg-white text-gray-900 hover:bg-gray-100 mt-4">
           Reset Game
@@ -169,7 +156,7 @@ export default function Home() {
                 Player {winner} wins! 🎉
               </AlertDialogDescription>
             </AlertDialogHeader>
-            <Button onClick={initializeGame}>Play Again</Button>
+            <Button onClick={handleReset}>Play Again</Button>
           </AlertDialogContent>
         </AlertDialog>
       </div>
