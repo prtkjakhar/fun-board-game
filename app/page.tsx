@@ -79,7 +79,8 @@ export default function Home() {
     <DndProvider backend={isTouchDevice ? TouchBackend : HTML5Backend}>
       <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 flex flex-col items-center justify-center p-4">
         <div className="mb-8 text-center">
-          <h1 className="text-4xl font-bold text-white mb-4">Strategic Board Game</h1>
+          <h1 className="text-4xl font-bold text-white mb-4">Fun Board Game</h1>
+          <h1 className="text-xl text-white mb-4">Get same color pieces in a line to win!</h1>
           <p className="text-gray-300 mb-2">
             Player {currentPlayer}&apos;s Turn
           </p>
