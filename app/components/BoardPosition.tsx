@@ -34,15 +34,14 @@ export function BoardPosition({ position, x, y, onMove, pieces }: BoardPositionP
     <div
       ref={drop}
       className={cn(
-        "absolute w-4 h-4 transform -translate-x-1/2 -translate-y-1/2 rounded-full border-2",
-        canDrop && "border-yellow-500 bg-yellow-500/20",
-        isOver && "bg-yellow-500/40",
-        !canDrop && "border-gray-400 bg-gray-800/20"
+        "absolute w-12 h-12 transform -translate-x-1/2 -translate-y-1/2 rounded-full transition-all duration-200",
+        canDrop && "border-4 border-yellow-500/50 bg-yellow-500/20",
+        isOver && "bg-yellow-500/40 scale-125",
+        !canDrop && "border-2 border-gray-400/30 bg-gray-800/20"
       )}
       style={{
         left: `${x}%`,
         top: `${y}%`,
-        color: 'white'
       }}
     />
   );

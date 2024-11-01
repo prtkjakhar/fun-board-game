@@ -274,7 +274,7 @@ export default class GameServer implements Party.Server {
     }
 
     const targetPosition = BOARD_POSITIONS[newPosition];
-    const snapRadius = 15;
+    const snapRadius = 35;
     const validPositionIndex = this.getNearestPosition(
       targetPosition,
       snapRadius

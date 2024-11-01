@@ -25,10 +25,11 @@ export function GamePiece({ piece, isCurrentPlayer, winner }: GamePieceProps) {
     <div
       ref={drag}
       className={cn(
-        "absolute w-8 h-8 transition-all duration-200 transform -translate-x-1/2 -translate-y-1/2 rounded-full cursor-pointer hover:scale-110",
-        piece.player === 1 ? "bg-red-500" : "bg-blue-500",
-        isCurrentPlayer && !winner && "hover:ring-2 hover:ring-yellow-400",
-        isDragging && "opacity-50"
+        "absolute w-10 h-10 transition-all duration-300 transform -translate-x-1/2 -translate-y-1/2 rounded-full shadow-lg cursor-pointer",
+        piece.player === 1 ? "bg-gradient-to-br from-red-400 to-red-600" : "bg-gradient-to-br from-blue-400 to-blue-600",
+        isCurrentPlayer && !winner && "hover:scale-110 hover:shadow-xl hover:ring-4 hover:ring-yellow-400/50",
+        isDragging && "opacity-75 scale-125",
+        !isCurrentPlayer && "opacity-90"
       )}
       style={{
         left: `${BOARD_POSITIONS[piece.position].x}%`,
